@@ -2,10 +2,37 @@ import streamlit as st
 import pandas as pd
 import datenbank
 
+# 1. Passwort-Check-Funktion
+def check_password():
+    """Gibt True zurück, wenn das Passwort korrekt ist."""
+    def password_entered():
+        if st.session_state["password"] == "DEIN_GEHEIMES_PASSWORT": # Hier dein Passwort
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Passwort aus dem Speicher löschen
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        # Erster Aufruf: Zeige Passwortfeld
+        st.text_input("Passwort eingeben", type="password", on_change=password_entered, key="password")
+        return False
+    elif not st.session_state["password_correct"]:
+        # Passwort war falsch
+        st.text_input("Passwort eingeben", type="password", on_change=password_entered, key="password")
+        st.error("Passwort falsch")
+        return False
+    else:
+        # Passwort war korrekt
+        return True
+
+# 2. Hauptprogramm nur ausführen, wenn eingeloggt
+if check_password():
+    st.title("💰 Finanz-Tracker")
+    # ... hier kommt dein gesamter restlicher Code (Navigation, Tabs, etc.) ...
+
 # Konfiguration
 st.set_page_config(page_title="Finanz-Tracker", layout="wide")
 
-st.title("💰 Finanz-Tracker")
 
 # Navigation
 menu = ["Dashboard", "Transaktionen", "Budgets", "Sparziele"]
