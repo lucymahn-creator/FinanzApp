@@ -6,7 +6,7 @@ import datenbank
 def check_password():
     """Gibt True zurück, wenn das Passwort korrekt ist."""
     def password_entered():
-        if st.session_state["password"] == "DEIN_GEHEIMES_PASSWORT": # Hier dein Passwort
+        if st.session_state["password"] == "Roterrp2004_": # Hier dein Passwort
             st.session_state["password_correct"] = True
             del st.session_state["password"]  # Passwort aus dem Speicher löschen
         else:
