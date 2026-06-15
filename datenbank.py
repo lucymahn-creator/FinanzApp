@@ -37,10 +37,10 @@ def speichere_eintrag(ber, typ, kat, betrag, dat, zus=""):
         })
 
 def loesche_eintrag(e_id):
-    _schreibe_alle([e for e in lade_eintraege() if e.get("ID") != e_id])
+    _schreibe_alle([e for e in get_data() if e.get("ID") != e_id])
 
 def update_eintrag(e_id, ber, typ, kat, betrag, dat, zus=""):
-    eintraege = lade_eintraege()
+    eintraege = get_data()
     for e in eintraege:
         if e["ID"] == e_id: 
             e.update({"Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": str(betrag), "Datum": dat, "Zusatz": zus})
