@@ -2,65 +2,53 @@ import streamlit as st
 import pandas as pd
 import datenbank
 
-# --- SEITENKONFIGURATION ---
-st.set_page_config(page_title="Finanz-Tracker Mobile", layout="wide")
+# Konfiguration
+st.set_page_config(page_title="Finanz-Tracker", layout="wide")
+
 st.title("💰 Finanz-Tracker")
 
-# Daten laden
-transaktionen = pd.DataFrame(datenbank.lade_eintraege("Transaktion"))
-budgets = pd.DataFrame(datenbank.lade_eintraege("Budget"))
-sparziele = pd.DataFrame(datenbank.lade_eintraege("Sparziel"))
+# Navigation
+menu = ["Dashboard", "Transaktionen", "Budgets", "Sparziele"]
+choice = st.sidebar.selectbox("Navigation", menu)
 
-# --- NAVIGATION ---
-tab1, tab2, tab3, tab4 = st.tabs(["Dashboard", "Transaktionen", "Budgets", "Sparziele"])
+# Daten laden (als Funktion, um immer aktuell zu sein)
+def get_data(typ):
+    return pd.DataFrame(datenbank.lade_eintraege(typ))
 
-# --- TAB 1: DASHBOARD ---
-with tab1:
+# --- DASHBOARD ---
+if choice == "Dashboard":
     st.subheader("Übersicht")
-    if not transaktionen.empty:
-        einnahmen = transaktionen[transaktionen['Typ'] == 'Einnahme']['Betrag'].astype(float).sum()
-        ausgaben = transaktionen[transaktionen['Typ'] == 'Ausgabe']['Betrag'].astype(float).sum()
+    df = get_data("Transaktion")
+    if not df.empty:
+        einnahmen = df[df['Typ'] == 'Einnahme']['Betrag'].sum()
+        ausgaben = df[df['Typ'] == 'Ausgabe']['Betrag'].sum()
         col1, col2, col3 = st.columns(3)
         col1.metric("Einnahmen", f"{einnahmen:.2f} €")
         col2.metric("Ausgaben", f"{ausgaben:.2f} €")
         col3.metric("Saldo", f"{einnahmen - ausgaben:.2f} €")
     else:
-        st.write("Keine Transaktionsdaten.")
+        st.info("Noch keine Daten vorhanden.")
 
-# --- TAB 2: TRANSAKTIONEN ---
-with tab2:
+# --- TRANSAKTIONEN ---
+elif choice == "Transaktionen":
     st.subheader("Transaktion erfassen")
-    with st.form("transaktion_form"):
+    with st.form("trans_form"):
         kategorie = st.text_input("Kategorie")
         betrag = st.number_input("Betrag", min_value=0.0)
         typ = st.selectbox("Typ", ["Ausgabe", "Einnahme"])
         if st.form_submit_button("Speichern"):
-            datenbank.speichere_eintrag("Transaktion", typ, kategorie, betrag, pd.Timestamp.now().strftime("%d.%m.%Y"))
+            datenbank.speichere_eintrag("Transaktion", typ, kategorie, betrag, "heute")
+            st.success("Gespeichert!")
             st.rerun()
-    st.dataframe(transaktionen.tail(5))
+    st.dataframe(get_data("Transaktion"))
 
-# --- TAB 3: BUDGETS ---
-with tab3:
-    st.subheader("Budgets verwalten")
-    with st.form("budget_form"):
-        kat = st.text_input("Kategorie (Budget)")
-        limit = st.number_input("Limit Betrag", min_value=0.0)
-        if st.form_submit_button("Budget setzen"):
-            # Speichere als Budget
-            datenbank.speichere_eintrag("Budget", "Monatlich", kat, limit, "")
-            st.rerun()
-    st.dataframe(budgets)
+# --- BUDGETS ---
+elif choice == "Budgets":
+    st.subheader("Budgets")
+    # Hier analog zu Transaktionen verfahren...
+    st.dataframe(get_data("Budget"))
 
-# --- TAB 4: SPARZIELE ---
-with tab4:
+# --- SPARZIELE ---
+elif choice == "Sparziele":
     st.subheader("Sparziele")
-    with st.form("sparziel_form"):
-        name = st.text_input("Ziel Name")
-        ziel_betrag = st.number_input("Zielbetrag", min_value=0.0)
-        aktuell = st.number_input("Aktuell gespart", min_value=0.0)
-        if st.form_submit_button("Speichern"):
-            # Zusatz speichern wir als "aktueller_stand|ziel"
-            zusatz = f"{aktuell}"
-            datenbank.speichere_eintrag("Sparziel", "Ziel", name, ziel_betrag, "", zusatz)
-            st.rerun()
-    st.dataframe(sparziele)
+    st.dataframe(get_data("Sparziel"))
