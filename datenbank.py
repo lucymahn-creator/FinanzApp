@@ -5,7 +5,7 @@ import pandas as pd
 import os
 
 # Statt CSV_DATEI = "datenbank.csv"
-CLOUD_CSV_URL = "https://cloud.zagorko.com/index.php/apps/files/files/5670?dir=/Finanz-App&openfile=true"
+CLOUD_CSV_URL = "https://cloud.zagorko.com/index.php/apps/files/files/5670?dir=/Finanz-App&openfile=true/download"
 
 def lade_eintraege_von_cloud():
     r = requests.get(CLOUD_CSV_URL)
