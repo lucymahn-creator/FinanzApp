@@ -7,10 +7,12 @@ import os
 # Statt CSV_DATEI = "datenbank.csv"
 CLOUD_CSV_URL = "https://cloud.zagorko.com/index.php/apps/files/files/5670?dir=/Finanz-App&openfile=true/download"
 
-def lade_eintraege_von_cloud():
-    r = requests.get(CLOUD_CSV_URL)
-    # Die Daten werden direkt im Arbeitsspeicher als DataFrame geladen
-    return pd.read_csv(io.StringIO(r.text))
+def get_data(typ):
+    # Debugging: Was kommt vom Server an?
+    antwort = requests.get(CLOUD_CSV_URL)
+    st.write("Server-Antwort Inhalt (ersten 100 Zeichen):", antwort.text[:100])
+    return pd.read_csv(io.StringIO(antwort.text))
+    
 def _schreibe_alle(eintraege):
     with open(CLOUD_CSV_URL, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=KOPF)
@@ -21,7 +23,7 @@ def datenbank_vorbereiten():
     if not os.path.exists(CLOUD_CSV_URL): 
         _schreibe_alle([]) 
 
-def lade_eintraege(bereich=None):
+def get_data(bereich=None):
     if not os.path.exists(CLOUD_CSV_URL): return []
     with open(CSV_DATEI, 'r', encoding='utf-8') as f:
         return [row for row in csv.DictReader(f) if bereich is None or row.get("Bereich") == bereich]
