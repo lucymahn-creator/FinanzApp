@@ -40,7 +40,7 @@ choice = st.sidebar.selectbox("Navigation", menu)
 
 # Daten laden (als Funktion, um immer aktuell zu sein)
 def get_data(typ):
-    return pd.DataFrame(datenbank.lade_eintraege(typ))
+    return pd.DataFrame(datenbank.get_data(typ))
 
 # --- DASHBOARD ---
 if choice == "Dashboard":
