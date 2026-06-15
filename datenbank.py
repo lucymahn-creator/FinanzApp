@@ -2,6 +2,7 @@ import csv
 import requests
 import io
 import pandas as pd
+import os
 
 # Statt CSV_DATEI = "datenbank.csv"
 CLOUD_CSV_URL = "https://cloud.zagorko.com/index.php/apps/files/files/5670?dir=/Finanz-App&openfile=true"
