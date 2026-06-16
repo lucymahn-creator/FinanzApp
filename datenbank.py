@@ -35,16 +35,11 @@ def speichere_eintrag(user, password, ber, typ, kat, betrag, dat, zus=""):
     neue_zeile = {"ID": "", "Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": betrag, "Datum": dat, "Zusatz": zus}
     df = pd.concat([df, pd.DataFrame([neue_zeile])], ignore_index=True)
     
-    # 3. Datei zurückschreiben (Die Korrektur liegt hier)
-    csv_string = df.to_csv(index=False)
-    # Wir übergeben den String direkt, anstatt ihn erst in einen Puffer zu schreiben
-    client.upload(csv_string, REMOTE_PATH)
+    # 3. Datei zurückschreiben - HIER IST DIE KORREKTUR
+    # Wir erstellen ein BytesIO Objekt, in das wir die CSV schreiben
+    output = io.BytesIO()
+    df.to_csv(output, index=False)
+    output.seek(0) # Zurück an den Anfang des Puffers springen
     
-    # Neue Zeile anhängen
-    neue_zeile = {"ID": "", "Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": betrag, "Datum": dat, "Zusatz": zus}
-    df = pd.concat([df, pd.DataFrame([neue_zeile])], ignore_index=True)
-    
-    # Hochladen
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
-    client.upload(csv_buffer.getvalue(), REMOTE_PATH)
+    # Wir übergeben den Puffer anstatt des langen Strings
+    client.upload(output, REMOTE_PATH)
