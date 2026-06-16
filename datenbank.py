@@ -4,11 +4,19 @@ import os
 CSV_DATEI = "datenbank.csv"
 
 def lade_eintraege(typ):
+    # Pfad zur Datei im selben Verzeichnis wie app.py
+    CSV_DATEI = "datenbank.csv" 
     if not os.path.exists(CSV_DATEI):
         return []
-    df = pd.read_csv(CSV_DATEI, sep=';')
-    # Filtern nach Typ, wenn übergeben
-    if typ and 'Typ' in df.columns:
+    
+    # Datei einlesen
+    df = pd.read_csv(CSV_DATEI)
+    
+    # Spaltennamen bereinigen, um Leerzeichen zu entfernen
+    df.columns = df.columns.str.strip() 
+    
+    # Sicherstellen, dass 'Typ' existiert, bevor gefiltert wird
+    if 'Typ' in df.columns and typ:
         df = df[df['Typ'] == typ]
     return df.to_dict('records')
 
