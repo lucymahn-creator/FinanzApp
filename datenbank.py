@@ -1,16 +1,15 @@
-from webdav3.client import Client
+import easywebdav2
 import pandas as pd
 import io
-import csv
 
 st.secrets["admin"]
 
-client = Client(options)
 REMOTE_PATH = "/Finanz-App/datenbank.csv"
 
 def lade_eintraege(bereich=None):
+    # Datei in einen Buffer laden
     buffer = io.BytesIO()
-    client.download_from(remote_path=REMOTE_PATH, local_path=buffer)
+    client.download(REMOTE_PATH, buffer)
     buffer.seek(0)
     df = pd.read_csv(buffer)
     if bereich:
@@ -18,14 +17,17 @@ def lade_eintraege(bereich=None):
     return df.to_dict('records')
 
 def speichere_eintrag(ber, typ, kat, betrag, dat, zus=""):
-    # 1. Aktuelle Daten laden
-    df = pd.read_csv(io.BytesIO(client.content(REMOTE_PATH)))
+    # 1. Daten laden
+    buffer = io.BytesIO()
+    client.download(REMOTE_PATH, buffer)
+    buffer.seek(0)
+    df = pd.read_csv(buffer)
     
-    # 2. Neue Zeile hinzufügen
+    # 2. Neue Zeile anhängen
     neue_zeile = {"ID": "", "Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": betrag, "Datum": dat, "Zusatz": zus}
     df = pd.concat([df, pd.DataFrame([neue_zeile])], ignore_index=True)
     
-    # 3. Zurück zur Nextcloud hochladen
+    # 3. Datei zurückschreiben
     csv_buffer = io.StringIO()
     df.to_csv(csv_buffer, index=False)
-    client.upload_to(remote_path=REMOTE_PATH, local_path=csv_buffer.getvalue().encode('utf-8'))
+    client.upload(csv_buffer.getvalue(), REMOTE_PATH)
