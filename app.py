@@ -11,6 +11,30 @@ st.title("💰 Finanz-Tracker")
 menu = ["Dashboard", "Transaktionen", "Budgets", "Sparziele"]
 choice = st.sidebar.selectbox("Navigation", menu)
 
+def check_password():
+    """Gibt True zurück, wenn das Passwort korrekt ist."""
+    # 1. Funktion, die aufgerufen wird, wenn das Eingabefeld sich ändert
+    def password_entered():
+        if st.session_state["password_input"] == "Roterrp2004_":
+            st.session_state["password_correct"] = True
+            del st.session_state["password_input"]  # Passwort aus Speicher löschen
+        else:
+            st.session_state["password_correct"] = False
+            st.error("Passwort falsch!")
+
+    # 2. Überprüfen, ob bereits eingeloggt
+    if st.session_state.get("password_correct", False):
+        return True
+
+    # 3. EINZIGES Eingabefeld - mit einem eindeutigen key
+    st.text_input(
+        "Passwort eingeben", 
+        type="password", 
+        on_change=password_entered, 
+        key="password_input"
+    )
+    return False
+
 # Daten laden
 def get_data(bereich):
     data = datenbank.lade_eintraege(bereich)
