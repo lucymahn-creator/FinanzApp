@@ -32,15 +32,28 @@ if check_password():
     # Daten laden
     df = pd.DataFrame(datenbank.lade_eintraege()) # Lade alle Daten
     
-    if choice == "Dashboard":
+   if choice == "Dashboard":
         st.subheader("Übersicht")
+        df = get_data("Transaktion")
+        
         if not df.empty:
+            # 1. Spaltennamen säubern (falls Leerzeichen drin sind)
+            df.columns = df.columns.str.strip()
+            
+            # 2. Betrag erzwingen als Zahl (Numeric)
+            # 'coerce' wandelt Fehler (wie Text) in NaN um, danach füllen wir mit 0
+            df['Betrag'] = pd.to_numeric(df['Betrag'], errors='coerce').fillna(0)
+            
+            # 3. Berechnungen
             einnahmen = df[df['Typ'] == 'Einnahme']['Betrag'].sum()
             ausgaben = df[df['Typ'] == 'Ausgabe']['Betrag'].sum()
+            
             col1, col2, col3 = st.columns(3)
             col1.metric("Einnahmen", f"{einnahmen:.2f} €")
             col2.metric("Ausgaben", f"{ausgaben:.2f} €")
             col3.metric("Saldo", f"{einnahmen - ausgaben:.2f} €")
+        else:
+            st.info("Noch keine Daten vorhanden.")
         
     elif choice == "Transaktionen":
         st.subheader("Transaktionen verwalten")
