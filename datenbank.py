@@ -3,6 +3,8 @@ import pandas as pd
 import io
 import csv
 
+st.secrets["admin"]
+
 client = Client(options)
 REMOTE_PATH = "/Finanz-App/datenbank.csv"
 
