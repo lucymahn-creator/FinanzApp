@@ -2,8 +2,6 @@ import easywebdav2
 import pandas as pd
 import io
 
-st.secrets["admin"]
-
 REMOTE_PATH = "/Finanz-App/datenbank.csv"
 https://github.com/lucymahn-creator/FinanzApp/blob/main/datenbank.py
 def lade_eintraege(user, password, bereich=None):
