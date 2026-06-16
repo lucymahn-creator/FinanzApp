@@ -1,47 +1,20 @@
-import csv
-import requests
-import io
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
-import os
 
-# Statt CSV_DATEI = "datenbank.csv"
-CLOUD_CSV_URL = "https://cloud.zagorko.com/index.php/apps/files/files/5670?dir=/Finanz-App&openfile=true/download"
+# Konfiguration
+scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
+         "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
 
-def get_data(typ):
-    # Debugging: Was kommt vom Server an?
-    antwort = requests.get(CLOUD_CSV_URL)
-    st.write("Server-Antwort Inhalt (ersten 100 Zeichen):", antwort.text[:100])
-    return pd.read_csv(io.StringIO(antwort.text))
-    
-def _schreibe_alle(eintraege):
-    with open(CLOUD_CSV_URL, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=KOPF)
-        writer.writeheader()
-        writer.writerows(eintraege)
+# Hier kommt deine JSON-Datei ins Spiel
+creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+client = gspread.authorize(creds)
+sheet = client.open("FinanzAppDB").worksheet("Transaktion")
 
-def datenbank_vorbereiten():
-    if not os.path.exists(CLOUD_CSV_URL): 
-        _schreibe_alle([]) 
+def lade_eintraege(typ):
+    data = sheet.get_all_records()
+    return data
 
-def get_data(bereich=None):
-    if not os.path.exists(CLOUD_CSV_URL): return []
-    with open(CSV_DATEI, 'r', encoding='utf-8') as f:
-        return [row for row in csv.DictReader(f) if bereich is None or row.get("Bereich") == bereich]
-
-def speichere_eintrag(ber, typ, kat, betrag, dat, zus=""):
-    datenbank_vorbereiten()
-    with open(CLOUD_CSV_URL, 'a', newline='', encoding='utf-8') as f:
-        csv.DictWriter(f, fieldnames=KOPF).writerow({
-            "ID": uuid.uuid4().hex, "Bereich": ber, "Typ": typ, 
-            "Kategorie": kat, "Betrag": str(betrag), "Datum": dat, "Zusatz": zus
-        })
-
-def loesche_eintrag(e_id):
-    _schreibe_alle([e for e in get_data() if e.get("ID") != e_id])
-
-def update_eintrag(e_id, ber, typ, kat, betrag, dat, zus=""):
-    eintraege = get_data()
-    for e in eintraege:
-        if e["ID"] == e_id: 
-            e.update({"Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": str(betrag), "Datum": dat, "Zusatz": zus})
-    _schreibe_alle(eintraege)
+def speichere_eintrag(typ, kategorie, betrag, datum, zusatz=""):
+    # Zeile an Google Sheet anhängen
+    sheet.append_row(["", "Transaktion", typ, kategorie, betrag, datum, zusatz])
