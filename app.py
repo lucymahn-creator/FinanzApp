@@ -55,8 +55,9 @@ if check_password():
         else:
             st.info("Keine Daten vorhanden.")
             
-   elif choice == "Transaktionen":
-        st.subheader("Transaktion erfassen")
+  elif choice == "Transaktionen":
+        st.subheader("Transaktionen verwalten")
+        # Formular zum Erfassen
         with st.form("trans_form"):
             col_a, col_b = st.columns(2)
             kat = col_a.text_input("Kategorie")
@@ -71,21 +72,13 @@ if check_password():
                 st.rerun()
         
         st.write("---")
-        st.subheader("Bestehende Transaktionen")
+        # Liste mit Buttons
         data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
         df = pd.DataFrame(data)
-        
         if not df.empty:
             for index, row in df.iterrows():
-                # Layout: Text links, Buttons rechts
                 c1, c2, c3 = st.columns([6, 1, 1])
-                c1.write(f"{row['Datum']} | {row['Kategorie']} | {row['Betrag']} € ({row['Typ']})")
-                
-                # Löschen-Button
+                c1.write(f"{row['Datum']} | {row['Kategorie']} | {row['Betrag']} €")
                 if c2.button("🗑️", key=f"del_{row['ID']}"):
                     datenbank.loesche_eintrag(USER, PASS, row['ID'])
                     st.rerun()
-                
-                # Bearbeiten-Button (Platzhalter)
-                if c3.button("✏️", key=f"edit_{row['ID']}"):
-                    st.info(f"Bearbeiten von {row['Kategorie']} kommt bald!")
