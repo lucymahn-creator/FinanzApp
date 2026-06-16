@@ -8,24 +8,20 @@ st.set_page_config(page_title="Finanz-Tracker", layout="wide")
 def check_password():
     """Gibt True zurück, wenn das Passwort korrekt ist."""
     def password_entered():
-        if st.session_state["password"] == "Roterrp2004_": # Hier dein Passwort
+        if st.session_state["password"] == "Roterrp2004_":
             st.session_state["password_correct"] = True
-            del st.session_state["password"]  # Passwort aus dem Speicher löschen
+            del st.session_state["password"]
         else:
             st.session_state["password_correct"] = False
+            st.error("Passwort falsch!")
 
-    if "password_correct" not in st.session_state:
-        # Erster Aufruf: Zeige Passwortfeld
-        st.text_input("Passwort eingeben", type="password", on_change=password_entered, key="password")
-        return False
-    elif not st.session_state["password_correct"]:
-        # Passwort war falsch
-        st.text_input("Passwort eingeben", type="password", on_change=password_entered, key="password")
-        st.error("Passwort falsch")
-        return False
-    else:
-        # Passwort war korrekt
+    # Überprüfe, ob der Nutzer bereits eingeloggt ist
+    if st.session_state.get("password_correct", False):
         return True
+
+    # Nur EINMAL das Eingabefeld anzeigen
+    st.text_input("Passwort eingeben", type="password", on_change=password_entered, key="password")
+    return False
         
 if check_password():
     st.title("💰 Finanz-Tracker")
