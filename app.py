@@ -39,7 +39,7 @@ menu = ["Dashboard", "Transaktionen", "Budgets", "Sparziele"]
 choice = st.sidebar.selectbox("Navigation", menu)
 
 # Daten laden (als Funktion, um immer aktuell zu sein)
-def get_data(typ):
+def lade_eintraege(typ):
     return pd.DataFrame(datenbank.get_data(typ))
 
 # --- DASHBOARD ---
@@ -67,7 +67,7 @@ elif choice == "Transaktionen":
             datenbank.speichere_eintrag("Transaktion", typ, kategorie, betrag, "heute")
             st.success("Gespeichert!")
             st.rerun()
-    st.dataframe(get_data("Transaktion"))
+    st.dataframe(lade_eintraege("Transaktion"))
 
 # --- BUDGETS ---
 elif choice == "Budgets":
