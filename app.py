@@ -57,30 +57,18 @@ if check_password():
             
     elif choice == "Transaktionen":
         st.subheader("Transaktion erfassen")
-        # 1. Das Formular zum Erfassen bleibt
         with st.form("trans_form"):
-            # ... (deine Felder für kat, betrag, typ, datum, zusatz)
+            kat = st.text_input("Kategorie")
+            betrag = st.number_input("Betrag", min_value=0.0)
+            typ = st.selectbox("Typ", ["Ausgabe", "Einnahme"])
+            datum = st.date_input("Datum")
+            zusatz = st.text_input("Zusatz")
+            
             if st.form_submit_button("Speichern"):
                 datenbank.speichere_eintrag(USER, PASS, "Transaktion", typ, kat, betrag, str(datum), zusatz)
                 st.success("Gespeichert!")
                 st.rerun()
         
-        st.divider() # Trennlinie für Ordnung
-        
-        # 2. Die Liste zum Verwalten kommt DARUNTER
-        st.subheader("Bestehende Transaktionen")
+        st.write("Transaktionen:")
         data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
-        df = pd.DataFrame(data)
-        
-        if not df.empty:
-            for index, row in df.iterrows():
-                # Wir erstellen Spalten für eine schöne Anordnung
-                col1, col2 = st.columns([4, 1])
-                col1.write(f"**{row['Kategorie']}**: {row['Betrag']}€ - {row['Typ']} ({row['Datum']})")
-                
-                # Der Lösch-Button für jede Zeile
-                if col2.button("Löschen", key=row['ID']):
-                    datenbank.loesche_eintrag(USER, PASS, row['ID'])
-                    st.rerun() # App neu laden, damit Zeile sofort weg ist
-        else:
-            st.info("Keine Transaktionen gefunden.")
+        st.dataframe(pd.DataFrame(data))
