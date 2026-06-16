@@ -37,25 +37,25 @@ if choice == "Dashboard":
         df = get_data("Transaktion")
         
         if not df.empty:
-            # 1. Spalten säubern
+            # Spalten säubern
             df.columns = df.columns.str.strip()
-            
-            # 2. Betrag zu numerischen Werten konvertieren
+            # Beträge erzwingen
             df['Betrag'] = pd.to_numeric(df['Betrag'], errors='coerce').fillna(0)
             
-            # 3. Berechnungen erzwingen als float
-            # Wir nehmen das erste Element, wenn es eine Series ist, oder direkt die Summe
-            einnahmen_series = df[df['Typ'] == 'Einnahme']['Betrag'].sum()
-            ausgaben_series = df[df['Typ'] == 'Ausgabe']['Betrag'].sum()
+            # --- Hier liegt der Fix ---
+            # Wir extrahieren die Summen und erzwingen die Umwandlung in eine Python-Zahl
+            einnahmen_df = df[df['Typ'] == 'Einnahme']['Betrag']
+            ausgaben_df = df[df['Typ'] == 'Ausgabe']['Betrag']
             
-            einnahmen = float(einnahmen_series) if pd.notnull(einnahmen_series) else 0.0
-            ausgaben = float(ausgaben_series) if pd.notnull(ausgaben_series) else 0.0
+            einnahmen = float(einnahmen_df.sum()) if not einnahmen_df.empty else 0.0
+            ausgaben = float(ausgaben_df.sum()) if not ausgaben_df.empty else 0.0
             saldo = einnahmen - ausgaben
             
-            # 4. Anzeige
+            # Anzeige
             col1, col2, col3 = st.columns(3)
             col1.metric("Einnahmen", f"{einnahmen:,.2f} €")
             col2.metric("Ausgaben", f"{ausgaben:,.2f} €")
             col3.metric("Saldo", f"{saldo:,.2f} €")
         else:
+            st.info("Noch keine Transaktionsdaten vorhanden.")
             st.info("Noch keine Daten vorhanden.")
