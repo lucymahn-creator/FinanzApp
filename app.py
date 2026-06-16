@@ -63,11 +63,16 @@ if check_password():
             betrag = st.number_input("Betrag", min_value=0.0)
             typ = st.selectbox("Typ", ["Ausgabe", "Einnahme"])
             datum = st.date_input("Datum")
+            # NEU: Eingabefeld für den Zusatz
+            zusatz = st.text_input("Zusatz / Notiz") 
+            
             if st.form_submit_button("Speichern"):
-                datenbank.speichere_eintrag("Transaktion", typ, kat, betrag, str(datum))
+                # Funktion anpassen, um den 'zusatz' mitzugeben
+                datenbank.speichere_eintrag("Transaktion", typ, kat, betrag, str(datum), zusatz)
                 st.success("Gespeichert!")
                 st.rerun()
         
+       
         st.write("Vorhandene Transaktionen:")
         st.dataframe(get_data("Transaktion"))
 
