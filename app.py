@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import datenbank
 
-# 1. Konfiguration - IMMER ganz oben
+# Konfiguration
 st.set_page_config(page_title="Finanz-Tracker", layout="wide")
 
-# 2. Passwort-Funktion
+# Passwort-Logik
 def check_password():
     def password_entered():
         if st.session_state["password_input"] == "Roterrp2004_":
@@ -21,33 +21,27 @@ def check_password():
     st.text_input("Passwort eingeben", type="password", on_change=password_entered, key="password_input")
     return False
 
-# 3. Hauptprogramm - ALLES muss hier drin stehen!
+# Hauptprogramm
 if check_password():
     st.title("💰 Finanz-Tracker")
     
-    # Navigation wird hier definiert, damit 'choice' existiert
-    menu = ["Dashboard", "Transaktionen", "Budgets", "Sparziele"]
-    choice = st.sidebar.selectbox("Navigation", menu)
+    # Navigation
+    choice = st.sidebar.selectbox("Navigation", ["Dashboard", "Transaktionen", "Budgets", "Sparziele"])
     
-    # Hilfsfunktion für Daten
-    def get_data(bereich):
-        data = datenbank.lade_eintraege(bereich)
-        return pd.DataFrame(data)
-
+    # Secrets holen
     USER = st.secrets["NEXTCLOUD_USER"]
-    PASs = st.secrets["NEXTCLOUD_PASS"]
-
-data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
-
+    PASS = st.secrets["NEXTCLOUD_PASS"]
+    
+    # Bereich laden
     if choice == "Dashboard":
         st.subheader("Übersicht")
-        df = get_data("Transaktion")
+        data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
+        df = pd.DataFrame(data)
         
         if not df.empty:
             df.columns = df.columns.str.strip()
             df['Betrag'] = pd.to_numeric(df['Betrag'], errors='coerce').fillna(0)
             
-            # Sichere Summenbildung
             ein_df = df[df['Typ'] == 'Einnahme']['Betrag']
             aus_df = df[df['Typ'] == 'Ausgabe']['Betrag']
             
@@ -59,7 +53,7 @@ data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
             col2.metric("Ausgaben", f"{ausgaben:,.2f} €")
             col3.metric("Saldo", f"{einnahmen - ausgaben:,.2f} €")
         else:
-            st.info("Noch keine Transaktionsdaten vorhanden.")
+            st.info("Keine Daten vorhanden.")
             
     elif choice == "Transaktionen":
         st.subheader("Transaktion erfassen")
@@ -68,18 +62,13 @@ data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
             betrag = st.number_input("Betrag", min_value=0.0)
             typ = st.selectbox("Typ", ["Ausgabe", "Einnahme"])
             datum = st.date_input("Datum")
-            # NEU: Eingabefeld für den Zusatz
-            zusatz = st.text_input("Zusatz / Notiz") 
+            zusatz = st.text_input("Zusatz")
             
             if st.form_submit_button("Speichern"):
-                # Funktion anpassen, um den 'zusatz' mitzugeben
-                datenbank.speichere_eintrag("Transaktion", typ, kat, betrag, str(datum), zusatz)
+                datenbank.speichere_eintrag(USER, PASS, "Transaktion", typ, kat, betrag, str(datum), zusatz)
                 st.success("Gespeichert!")
                 st.rerun()
         
-       
-        st.write("Vorhandene Transaktionen:")
-        st.dataframe(get_data("Transaktion"))
-
-    else:
-        st.write(f"Bereich {choice} ist in Entwicklung.")
+        st.write("Transaktionen:")
+        data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
+        st.dataframe(pd.DataFrame(data))
