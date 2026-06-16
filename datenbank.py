@@ -54,3 +54,37 @@ def speichere_eintrag(user, password, ber, typ, kat, betrag, dat, zus=""):
     df.to_csv(output, index=False)
     output.seek(0)
     client.upload(output, REMOTE_PATH)
+
+def loesche_eintrag(user, password, eintrag_id):
+    client = get_client(user, password)
+    # Lade Daten
+    buffer = io.BytesIO()
+    client.download(REMOTE_PATH, buffer)
+    buffer.seek(0)
+    df = pd.read_csv(buffer)
+    
+    # Filtere den Eintrag mit der ID heraus
+    df = df[df['ID'] != eintrag_id]
+    
+    # Hochladen
+    output = io.BytesIO()
+    df.to_csv(output, index=False)
+    output.seek(0)
+    client.upload(output, REMOTE_PATH)
+
+def bearbeite_eintrag(user, password, eintrag_id, neue_daten):
+    client = get_client(user, password)
+    buffer = io.BytesIO()
+    client.download(REMOTE_PATH, buffer)
+    buffer.seek(0)
+    df = pd.read_csv(buffer)
+    
+    # Aktualisiere die Zeile mit der passenden ID
+    for key, value in neue_daten.items():
+        df.loc[df['ID'] == eintrag_id, key] = value
+        
+    # Hochladen
+    output = io.BytesIO()
+    df.to_csv(output, index=False)
+    output.seek(0)
+    client.upload(output, REMOTE_PATH)
