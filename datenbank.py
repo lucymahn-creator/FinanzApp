@@ -1,5 +1,5 @@
 import os
-import datenbank.csv
+import csv
 
 # Pfad zur CSV-Datei
 CSV_DATEI = "datenbank.csv"
