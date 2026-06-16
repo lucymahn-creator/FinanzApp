@@ -5,12 +5,16 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_DATEI = os.path.join(BASE_DIR, "datenbank.csv")
 
-def lade_eintraege(typ):
-    # Debugging: Wir lassen uns den Pfad anzeigen, um zu sehen, wo er sucht
+def lade_eintraege(): # Entferne das Argument 'typ' hier
     if not os.path.exists(CSV_DATEI):
-        # Das wird im Log der Streamlit App angezeigt, wenn es fehlschlägt
-        print(f"DEBUG: Datei nicht gefunden unter: {CSV_DATEI}")
         return []
+    
+    eintraege = []
+    with open(CSV_DATEI, mode='r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            eintraege.append(row) # Einfach alles hinzufügen
+    return eintraege
     
     eintraege = []
     with open(CSV_DATEI, mode='r', encoding='utf-8') as f:
