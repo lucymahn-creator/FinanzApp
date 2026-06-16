@@ -23,8 +23,7 @@ def check_password():
     st.text_input("Passwort eingeben", type="password", on_change=password_entered, key="password")
     return False
         
-if check_password():
-    st.title("💰 Finanz-Tracker")
+
 
 # 2. Hauptprogramm nur ausführen, wenn eingeloggt
 if check_password():
