@@ -6,7 +6,7 @@ CSV_DATEI = "datenbank.csv"
 def lade_eintraege(typ):
     if not os.path.exists(CSV_DATEI):
         return []
-    df = pd.read_csv(CSV_DATEI)
+    df = pd.read_csv(CSV_DATEI, sep=';')
     # Filtern nach Typ, wenn übergeben
     if typ and 'Typ' in df.columns:
         df = df[df['Typ'] == typ]
