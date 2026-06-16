@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 # "datenbank.csv" liegt im selben Ordner wie diese Datei (datenbank.py)
-CSV_PFAD = "datenbank.csv"
+CSV_PFAD = "https://github.com/lucymahn-creator/FinanzApp/blob/main/datenbank.csv"
 
 def lade_eintraege(typ=None):
     """Läd die Daten direkt aus dem Repository-Ordner."""
