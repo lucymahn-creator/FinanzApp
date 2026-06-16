@@ -24,11 +24,21 @@ def lade_eintraege(user, password, bereich=None):
 
 def speichere_eintrag(user, password, ber, typ, kat, betrag, dat, zus=""):
     client = get_client(user, password)
-    # Lade aktuelle Daten
+    
+    # 1. Daten laden
     buffer = io.BytesIO()
     client.download(REMOTE_PATH, buffer)
     buffer.seek(0)
     df = pd.read_csv(buffer)
+    
+    # 2. Neue Zeile anhängen
+    neue_zeile = {"ID": "", "Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": betrag, "Datum": dat, "Zusatz": zus}
+    df = pd.concat([df, pd.DataFrame([neue_zeile])], ignore_index=True)
+    
+    # 3. Datei zurückschreiben (Die Korrektur liegt hier)
+    csv_string = df.to_csv(index=False)
+    # Wir übergeben den String direkt, anstatt ihn erst in einen Puffer zu schreiben
+    client.upload(csv_string, REMOTE_PATH)
     
     # Neue Zeile anhängen
     neue_zeile = {"ID": "", "Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": betrag, "Datum": dat, "Zusatz": zus}
