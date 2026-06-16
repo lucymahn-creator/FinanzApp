@@ -3,12 +3,6 @@ import pandas as pd
 import io
 import csv
 
-# Deine Nextcloud Zugangsdaten (Speichere diese in Streamlit Secrets, nicht im Code!)
-options = {
-    'webdav_hostname': "https://cloud.zagorko.com",
-    'webdav_login': "DEIN_USERNAME",
-    'webdav_password': "DEIN_APP_PASSWORT" # Generiere ein App-Passwort in Nextcloud!
-}
 client = Client(options)
 REMOTE_PATH = "/Finanz-App/datenbank.csv"
 
