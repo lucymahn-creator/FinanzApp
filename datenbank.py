@@ -3,7 +3,7 @@ import pandas as pd
 import io
 import uuid
 
-REMOTE_PATH = "Finanz-App/datenbank.csv" # Bitte ohne führendes / versuchen
+REMOTE_PATH = "remote.php/dav/files/admin/Finanz-App/datenbank.csv" 
 
 def get_client(user, password):
     return easywebdav2.connect("cloud.zagorko.com", username=user, password=password, protocol="https")
