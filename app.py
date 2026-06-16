@@ -40,12 +40,12 @@ choice = st.sidebar.selectbox("Navigation", menu)
 
 # Daten laden (als Funktion, um immer aktuell zu sein)
 def lade_eintraege(typ):
-    return pd.DataFrame(datenbank.lade_eintraege(typ))
+    return pd.DataFrame(datenbank.get_data(typ))
 
 # --- DASHBOARD ---
 if choice == "Dashboard":
     st.subheader("Übersicht")
-    df = lade_eintraege("Transaktion")
+    df = get_data("Transaktion")
     if not df.empty:
         einnahmen = df[df['Typ'] == 'Einnahme']['Betrag'].sum()
         ausgaben = df[df['Typ'] == 'Ausgabe']['Betrag'].sum()
@@ -67,15 +67,15 @@ elif choice == "Transaktionen":
             datenbank.speichere_eintrag("Transaktion", typ, kategorie, betrag, "heute")
             st.success("Gespeichert!")
             st.rerun()
-    st.dataframe(lade_eintraege("Transaktion"))
+    st.dataframe(get_data("Transaktion"))
 
 # --- BUDGETS ---
 elif choice == "Budgets":
     st.subheader("Budgets")
     # Hier analog zu Transaktionen verfahren...
-    st.dataframe(lade_eintraege("Budget"))
+    st.dataframe(get_data("Budget"))
 
 # --- SPARZIELE ---
 elif choice == "Sparziele":
     st.subheader("Sparziele")
-    st.dataframe(lade_eintraege("Sparziel"))
+    st.dataframe(get_data("Sparziel"))
