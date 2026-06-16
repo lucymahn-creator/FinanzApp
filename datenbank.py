@@ -1,51 +1,47 @@
-import pandas as pd
+import csv
 import os
+import uuid
+
+
+CSV_DATEI = os.path.join(NEXTCLOUD_PFAD, "datenbank.csv")
+
+def datenbank_vorbereiten():
+    if not os.path.exists(CSV_DATEI):
+        # Initialisierung...
+        pass
 
 CSV_DATEI = "datenbank.csv"
+KOPF = ["ID", "Bereich", "Typ", "Kategorie", "Betrag", "Datum", "Zusatz"]
 
-import pandas as pd
-import os
+def _schreibe_alle(eintraege):
+    with open(CSV_DATEI, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=KOPF)
+        writer.writeheader()
+        writer.writerows(eintraege)
 
-CSV_DATEI = "datenbank.csv"
+def datenbank_vorbereiten():
+    if not os.path.exists(CSV_DATEI): 
+        _schreibe_alle([]) 
 
-def lade_eintraege(typ):
-    if not os.path.exists(CSV_DATEI):
-        return []
-    
-    # Datei einlesen
-    df = pd.read_csv(CSV_DATEI)
-    
-    # WICHTIG: Alle Leerzeichen aus den Spaltennamen entfernen
-    df.columns = df.columns.str.strip()
-    
-    # Debug: Spaltennamen zur Kontrolle anzeigen
-    print(f"Gefundene Spalten: {df.columns.tolist()}")
-    
-    # Filtern, nur wenn 'Typ' nach der Bereinigung existiert
-    if 'Typ' in df.columns and typ:
-        df = df[df['Typ'] == typ]
-        
-    return df.to_dict('records')
-    
-    # Datei einlesen
-    df = pd.read_csv(CSV_DATEI)
-    
-    # Spaltennamen bereinigen, um Leerzeichen zu entfernen
-    df.columns = df.columns.str.strip() 
-    
-    # Sicherstellen, dass 'Typ' existiert, bevor gefiltert wird
-    if 'Typ' in df.columns and typ:
-        df = df[df['Typ'] == typ]
-    return df.to_dict('records')
+def lade_eintraege(bereich=None):
+    if not os.path.exists(CSV_DATEI): return []
+    with open(CSV_DATEI, 'r', encoding='utf-8') as f:
+        return [row for row in csv.DictReader(f) if bereich is None or row.get("Bereich") == bereich]
 
-def speichere_eintrag(datenbank_typ, typ, kategorie, betrag, datum, zusatz=""):
-    neue_zeile = {
-        'ID': '', 'Bereich': datenbank_typ, 'Typ': typ, 
-        'Kategorie': kategorie, 'Betrag': betrag, 'Datum': datum, 'Zusatz': zusatz
-    }
-    if not os.path.exists(CSV_DATEI):
-        df = pd.DataFrame([neue_zeile])
-    else:
-        df = pd.read_csv(CSV_DATEI, sep=';')
-        df = pd.concat([df, pd.DataFrame([neue_zeile])], ignore_index=True)
-    df.to_csv(CSV_DATEI, index=False)
+def speichere_eintrag(ber, typ, kat, betrag, dat, zus=""):
+    datenbank_vorbereiten()
+    with open(CSV_DATEI, 'a', newline='', encoding='utf-8') as f:
+        csv.DictWriter(f, fieldnames=KOPF).writerow({
+            "ID": uuid.uuid4().hex, "Bereich": ber, "Typ": typ, 
+            "Kategorie": kat, "Betrag": str(betrag), "Datum": dat, "Zusatz": zus
+        })
+
+def loesche_eintrag(e_id):
+    _schreibe_alle([e for e in lade_eintraege() if e.get("ID") != e_id])
+
+def update_eintrag(e_id, ber, typ, kat, betrag, dat, zus=""):
+    eintraege = lade_eintraege()
+    for e in eintraege:
+        if e["ID"] == e_id: 
+            e.update({"Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": str(betrag), "Datum": dat, "Zusatz": zus})
+    _schreibe_alle(eintraege)
