@@ -1,45 +1,35 @@
+from webdav3.client import Client
+import pandas as pd
+import io
 import csv
-import os
-import uuid
 
-
-def datenbank_vorbereiten():
-    if not os.path.exists(CSV_DATEI):
-        # Initialisierung...
-        pass
-
-CSV_DATEI = "datenbank.csv"
-KOPF = ["ID", "Bereich", "Typ", "Kategorie", "Betrag", "Datum", "Zusatz"]
-
-def _schreibe_alle(eintraege):
-    with open(CSV_DATEI, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=KOPF)
-        writer.writeheader()
-        writer.writerows(eintraege)
-
-def datenbank_vorbereiten():
-    if not os.path.exists(CSV_DATEI): 
-        _schreibe_alle([]) 
+# Deine Nextcloud Zugangsdaten (Speichere diese in Streamlit Secrets, nicht im Code!)
+options = {
+    'webdav_hostname': "https://cloud.zagorko.com",
+    'webdav_login': "DEIN_USERNAME",
+    'webdav_password': "DEIN_APP_PASSWORT" # Generiere ein App-Passwort in Nextcloud!
+}
+client = Client(options)
+REMOTE_PATH = "/Finanz-App/datenbank.csv"
 
 def lade_eintraege(bereich=None):
-    if not os.path.exists(CSV_DATEI): return []
-    with open(CSV_DATEI, 'r', encoding='utf-8') as f:
-        return [row for row in csv.DictReader(f) if bereich is None or row.get("Bereich") == bereich]
+    buffer = io.BytesIO()
+    client.download_from(remote_path=REMOTE_PATH, local_path=buffer)
+    buffer.seek(0)
+    df = pd.read_csv(buffer)
+    if bereich:
+        df = df[df['Bereich'] == bereich]
+    return df.to_dict('records')
 
 def speichere_eintrag(ber, typ, kat, betrag, dat, zus=""):
-    datenbank_vorbereiten()
-    with open(CSV_DATEI, 'a', newline='', encoding='utf-8') as f:
-        csv.DictWriter(f, fieldnames=KOPF).writerow({
-            "ID": uuid.uuid4().hex, "Bereich": ber, "Typ": typ, 
-            "Kategorie": kat, "Betrag": str(betrag), "Datum": dat, "Zusatz": zus
-        })
-
-def loesche_eintrag(e_id):
-    _schreibe_alle([e for e in lade_eintraege() if e.get("ID") != e_id])
-
-def update_eintrag(e_id, ber, typ, kat, betrag, dat, zus=""):
-    eintraege = lade_eintraege()
-    for e in eintraege:
-        if e["ID"] == e_id: 
-            e.update({"Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": str(betrag), "Datum": dat, "Zusatz": zus})
-    _schreibe_alle(eintraege)
+    # 1. Aktuelle Daten laden
+    df = pd.read_csv(io.BytesIO(client.content(REMOTE_PATH)))
+    
+    # 2. Neue Zeile hinzufügen
+    neue_zeile = {"ID": "", "Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": betrag, "Datum": dat, "Zusatz": zus}
+    df = pd.concat([df, pd.DataFrame([neue_zeile])], ignore_index=True)
+    
+    # 3. Zurück zur Nextcloud hochladen
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)
+    client.upload_to(remote_path=REMOTE_PATH, local_path=csv_buffer.getvalue().encode('utf-8'))
