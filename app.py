@@ -34,8 +34,8 @@ if check_password():
         data = datenbank.lade_eintraege(bereich)
         return pd.DataFrame(data)
 
-    USER = st.secrets["username"]
-    PAS = st.secrets["password"]
+    USER = st.secrets["NEXTCLOUD_USER"]
+    PAS = st.secrets["NEXTCLOUD_PASS"]
 
     if choice == "Dashboard":
         st.subheader("Übersicht")
