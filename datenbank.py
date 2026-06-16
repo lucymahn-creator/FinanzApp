@@ -20,6 +20,6 @@ def speichere_eintrag(datenbank_typ, typ, kategorie, betrag, datum, zusatz=""):
     if not os.path.exists(CSV_DATEI):
         df = pd.DataFrame([neue_zeile])
     else:
-        df = pd.read_csv(CSV_DATEI)
+        df = pd.read_csv(CSV_DATEI, sep=';')
         df = pd.concat([df, pd.DataFrame([neue_zeile])], ignore_index=True)
     df.to_csv(CSV_DATEI, index=False)
