@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import datenbank
 
+st.set_page_config(page_title="Finanz-Tracker", layout="wide")
+
 # 1. Passwort-Check-Funktion
 def check_password():
     """Gibt True zurück, wenn das Passwort korrekt ist."""
@@ -24,14 +26,15 @@ def check_password():
     else:
         # Passwort war korrekt
         return True
+        
+if check_password():
+    st.title("💰 Finanz-Tracker")
 
 # 2. Hauptprogramm nur ausführen, wenn eingeloggt
 if check_password():
     st.title("💰 Finanz-Tracker")
     # ... hier kommt dein gesamter restlicher Code (Navigation, Tabs, etc.) ...
 
-# Konfiguration
-st.set_page_config(page_title="Finanz-Tracker", layout="wide")
 
 
 # Navigation
