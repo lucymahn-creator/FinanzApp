@@ -1,19 +1,16 @@
-import pandas as pd
 import os
+import pandas as pd
 
-# Wir nutzen eine CSV, die direkt im selben Ordner wie datenbank.py liegt
-CSV_DATEI = "datenbank.csv" 
+# 1. Wir lassen uns den Pfad ausgeben, den Streamlit wirklich sieht
+print(f"Aktuelles Arbeitsverzeichnis: {os.getcwd()}")
+print(f"Dateien im Verzeichnis: {os.listdir('.')}")
 
-def lade_eintraege(typ):
-    # Wenn die Datei existiert, lade sie
-    if os.path.exists(CSV_DATEI):
-        df = pd.read_csv(CSV_DATEI)
-        # Filtern nach Typ, falls gewünscht
-        if typ:
-            return df[df['Typ'] == typ].to_dict('records')
-        return df.to_dict('records')
-    else:
-        return []
-
-# HINWEIS: Schreiben in eine Datei in der Cloud ist kompliziert. 
-# Für den Anfang: Fokus auf das Lesen der Daten!
+# 2. Versuch, die Datei explizit zu laden
+def lade_eintraege():
+    try:
+        # Wir laden die Datei direkt aus dem Hauptverzeichnis
+        df = pd.read_csv("datenbank.csv")
+        return df
+    except Exception as e:
+        print(f"FEHLER beim Laden der CSV: {e}")
+        return pd.DataFrame() # Leeres DataFrame bei Fehler
