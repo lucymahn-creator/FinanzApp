@@ -5,9 +5,9 @@ import io
 st.secrets["admin"]
 
 REMOTE_PATH = "/Finanz-App/datenbank.csv"
-
-def lade_eintraege(bereich=None):
-    # Datei in einen Buffer laden
+https://github.com/lucymahn-creator/FinanzApp/blob/main/datenbank.py
+def lade_eintraege(user, password, bereich=None):
+    client = get_client(user, password)
     buffer = io.BytesIO()
     client.download(REMOTE_PATH, buffer)
     buffer.seek(0)
@@ -16,12 +16,9 @@ def lade_eintraege(bereich=None):
         df = df[df['Bereich'] == bereich]
     return df.to_dict('records')
 
-def speichere_eintrag(ber, typ, kat, betrag, dat, zus=""):
-    # 1. Daten laden
-    buffer = io.BytesIO()
-    client.download(REMOTE_PATH, buffer)
-    buffer.seek(0)
-    df = pd.read_csv(buffer)
+def speichere_eintrag(user, password, ber, typ, kat, betrag, dat, zus=""):
+    client = get_client(user, password)
+    # ... (Rest wie gehabt, verwende 'client' hier)
     
     # 2. Neue Zeile anhängen
     neue_zeile = {"ID": "", "Bereich": ber, "Typ": typ, "Kategorie": kat, "Betrag": betrag, "Datum": dat, "Zusatz": zus}
