@@ -17,7 +17,7 @@ def check_password():
     def password_entered():
         if st.session_state["password_input"] == "Roterrp2004_":
             st.session_state["password_correct"] = True
-            del st.session_state["password_input"]  # Passwort aus Speicher löschen
+            del st.session_state["password_input"]  # Passwort aus dem Speicher löschen
         else:
             st.session_state["password_correct"] = False
             st.error("Passwort falsch!")
@@ -25,6 +25,15 @@ def check_password():
     # 2. Überprüfen, ob bereits eingeloggt
     if st.session_state.get("password_correct", False):
         return True
+
+    # 3. EINZIGES Eingabefeld - mit einem eindeutigen key
+    st.text_input(
+        "Passwort eingeben", 
+        type="password", 
+        on_change=password_entered, 
+        key="password_input"
+    )
+    return False
 
     # 3. EINZIGES Eingabefeld - mit einem eindeutigen key
     st.text_input(
