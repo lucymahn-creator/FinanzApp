@@ -29,7 +29,7 @@ if check_password():
     choice = st.sidebar.selectbox("Navigation", ["Dashboard", "Transaktionen", "Budgets", "Sparziele"])
     
     # Secrets holen
-    USER = st.secrets["Lucy_Max_C"]
+    USER = st.secrets["NEXTCLOUD_USER"]
     PASS = st.secrets["NEXTCLOUD_PASS"]
     
     # Bereich laden
