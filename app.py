@@ -39,8 +39,8 @@ menu = ["Dashboard", "Transaktionen", "Budgets", "Sparziele"]
 choice = st.sidebar.selectbox("Navigation", menu)
 
 # Daten laden (als Funktion, um immer aktuell zu sein)
-def lade_eintraege(typ):
-    return pd.DataFrame(datenbank.get_data(typ))
+def get_data():
+    return pd.DataFrame(datenbank.lade_eintraege())
 
 # --- DASHBOARD ---
 if choice == "Dashboard":
