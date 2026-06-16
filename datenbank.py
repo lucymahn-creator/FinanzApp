@@ -2,7 +2,7 @@ import easywebdav2
 import pandas as pd
 import io
 
-REMOTE_PATH = "/Finanz-App/datenbank.csv"
+REMOTE_PATH = "remote.php/dav/files/admin/Finanz-App/datenbank.csv"
 
 def get_client(user, password):
     return easywebdav2.connect(
