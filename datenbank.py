@@ -3,8 +3,6 @@ import os
 import uuid
 
 
-CSV_DATEI = os.path.join(NEXTCLOUD_PFAD, "datenbank.csv")
-
 def datenbank_vorbereiten():
     if not os.path.exists(CSV_DATEI):
         # Initialisierung...
