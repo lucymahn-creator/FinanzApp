@@ -2,7 +2,10 @@ import streamlit as st
 import pandas as pd
 import datenbank
 
+# MUSS GANZ OBEN STEHEN
 st.set_page_config(page_title="Finanz-Tracker", layout="wide")
+
+# ... dann erst deine anderen Funktionen wie check_password() ...
 
 # 1. Passwort-Check-Funktion
 def check_password():
