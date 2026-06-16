@@ -1,12 +1,11 @@
 import streamlit as st
 import pandas as pd
 import datenbank
-import uuid
 
-# 1. Konfiguration
+# 1. Konfiguration - IMMER ganz oben
 st.set_page_config(page_title="Finanz-Tracker", layout="wide")
 
-# 2. Passwort-Logik
+# 2. Passwort-Funktion
 def check_password():
     def password_entered():
         if st.session_state["password_input"] == "Roterrp2004_":
@@ -22,40 +21,55 @@ def check_password():
     st.text_input("Passwort eingeben", type="password", on_change=password_entered, key="password_input")
     return False
 
-# 3. Hauptprogramm
+# 3. Hauptprogramm - ALLES muss hier drin stehen!
 if check_password():
     st.title("💰 Finanz-Tracker")
     
-    # Navigation
-    choice = st.sidebar.selectbox("Navigation", ["Dashboard", "Transaktionen", "Budgets", "Sparziele"])
+    # Navigation wird hier definiert, damit 'choice' existiert
+    menu = ["Dashboard", "Transaktionen", "Budgets", "Sparziele"]
+    choice = st.sidebar.selectbox("Navigation", menu)
     
-    # Daten laden
-    df = pd.DataFrame(datenbank.lade_eintraege()) # Lade alle Daten
-    
-if choice == "Dashboard":
+    # Hilfsfunktion für Daten
+    def get_data(bereich):
+        data = datenbank.lade_eintraege(bereich)
+        return pd.DataFrame(data)
+
+    if choice == "Dashboard":
         st.subheader("Übersicht")
         df = get_data("Transaktion")
         
         if not df.empty:
-            # Spalten säubern
             df.columns = df.columns.str.strip()
-            # Beträge erzwingen
             df['Betrag'] = pd.to_numeric(df['Betrag'], errors='coerce').fillna(0)
             
-            # --- Hier liegt der Fix ---
-            # Wir extrahieren die Summen und erzwingen die Umwandlung in eine Python-Zahl
-            einnahmen_df = df[df['Typ'] == 'Einnahme']['Betrag']
-            ausgaben_df = df[df['Typ'] == 'Ausgabe']['Betrag']
+            # Sichere Summenbildung
+            ein_df = df[df['Typ'] == 'Einnahme']['Betrag']
+            aus_df = df[df['Typ'] == 'Ausgabe']['Betrag']
             
-            einnahmen = float(einnahmen_df.sum()) if not einnahmen_df.empty else 0.0
-            ausgaben = float(ausgaben_df.sum()) if not ausgaben_df.empty else 0.0
-            saldo = einnahmen - ausgaben
+            einnahmen = float(ein_df.sum()) if not ein_df.empty else 0.0
+            ausgaben = float(aus_df.sum()) if not aus_df.empty else 0.0
             
-            # Anzeige
             col1, col2, col3 = st.columns(3)
             col1.metric("Einnahmen", f"{einnahmen:,.2f} €")
             col2.metric("Ausgaben", f"{ausgaben:,.2f} €")
-            col3.metric("Saldo", f"{saldo:,.2f} €")
+            col3.metric("Saldo", f"{einnahmen - ausgaben:,.2f} €")
         else:
             st.info("Noch keine Transaktionsdaten vorhanden.")
-            st.info("Noch keine Daten vorhanden.")
+            
+    elif choice == "Transaktionen":
+        st.subheader("Transaktion erfassen")
+        with st.form("trans_form"):
+            kat = st.text_input("Kategorie")
+            betrag = st.number_input("Betrag", min_value=0.0)
+            typ = st.selectbox("Typ", ["Ausgabe", "Einnahme"])
+            datum = st.date_input("Datum")
+            if st.form_submit_button("Speichern"):
+                datenbank.speichere_eintrag("Transaktion", typ, kat, betrag, str(datum))
+                st.success("Gespeichert!")
+                st.rerun()
+        
+        st.write("Vorhandene Transaktionen:")
+        st.dataframe(get_data("Transaktion"))
+
+    else:
+        st.write(f"Bereich {choice} ist in Entwicklung.")
