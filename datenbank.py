@@ -1,28 +1,21 @@
-import requests
 import pandas as pd
-import io
+import os
 
-# Deine URL
-CLOUD_CSV_URL = "https://cloud.zagorko.com/s/DeinGeheimerCode/download" # WICHTIG: /download am Ende!
+# "datenbank.csv" liegt im selben Ordner wie diese Datei (datenbank.py)
+CSV_PFAD = "datenbank.csv"
 
 def lade_eintraege(typ=None):
-    """Läd die Daten von deiner Nextcloud."""
+    """Läd die Daten direkt aus dem Repository-Ordner."""
+    if not os.path.exists(CSV_PFAD):
+        print(f"DEBUG: Datei {CSV_PFAD} nicht gefunden!")
+        return []
+    
     try:
-        r = requests.get(CLOUD_CSV_URL)
-        r.raise_for_status() # Prüft, ob der Download erfolgreich war
-        df = pd.read_csv(io.StringIO(r.text))
-        
+        df = pd.read_csv(CSV_PFAD)
+        # Wenn ein Typ gefiltert werden soll
         if typ:
-            # Filtert nach Typ, wenn einer angegeben wurde
-            return df[df['Typ'] == typ].to_dict('records')
+            df = df[df['Typ'] == typ]
         return df.to_dict('records')
     except Exception as e:
-        print(f"Fehler beim Laden: {e}")
+        print(f"Fehler beim Lesen der CSV: {e}")
         return []
-
-def speichere_eintrag(typ, kategorie, betrag, datum, zusatz=""):
-    """
-    Hinweis: In der Streamlit Cloud kannst du keine Dateien überschreiben.
-    Hier müsstest du eine Datenbank nutzen oder das Sheet manuell pflegen.
-    """
-    print("Schreiben in der Cloud ist aktuell deaktiviert.")
