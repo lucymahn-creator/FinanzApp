@@ -56,19 +56,19 @@ if check_password():
             st.info("Keine Daten vorhanden.")
             
     elif choice == "Transaktionen":
-        st.subheader("Transaktion erfassen")
-        with st.form("trans_form"):
-            kat = st.text_input("Kategorie")
-            betrag = st.number_input("Betrag", min_value=0.0)
-            typ = st.selectbox("Typ", ["Ausgabe", "Einnahme"])
-            datum = st.date_input("Datum")
-            zusatz = st.text_input("Zusatz")
-            
-            if st.form_submit_button("Speichern"):
-                datenbank.speichere_eintrag(USER, PASS, "Transaktion", typ, kat, betrag, str(datum), zusatz)
-                st.success("Gespeichert!")
-                st.rerun()
+        st.subheader("Transaktionen verwalten")
         
+        # Bestehende Daten anzeigen mit Löschfunktion
+        data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
+        df = pd.DataFrame(data)
+        
+        for index, row in df.iterrows():
+            col1, col2 = st.columns([4, 1])
+            col1.write(f"{row['Datum']} | {row['Kategorie']} | {row['Betrag']}€ ({row['Typ']})")
+            if col2.button("Löschen", key=row['ID']):
+                datenbank.loesche_eintrag(USER, PASS, row['ID'])
+                st.rerun()
+                
         st.write("Transaktionen:")
         data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
         st.dataframe(pd.DataFrame(data))
