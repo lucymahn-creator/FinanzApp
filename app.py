@@ -32,27 +32,25 @@ if check_password():
     # Daten laden
     df = pd.DataFrame(datenbank.lade_eintraege()) # Lade alle Daten
     
-  if choice == "Dashboard":
+ if choice == "Dashboard":
         st.subheader("Übersicht")
         df = get_data("Transaktion")
         
         if not df.empty:
-            # 1. Leerzeichen aus Spaltennamen entfernen
+            # 1. Spalten säubern
             df.columns = df.columns.str.strip()
-            
-            # 2. Betrag erzwingen als Zahl (Numeric). 
-            # Fehler (wie Text) werden zu 0 umgewandelt.
+            # 2. Beträge zu Zahlen konvertieren
             df['Betrag'] = pd.to_numeric(df['Betrag'], errors='coerce').fillna(0)
             
-            # 3. Berechnungen
-            einnahmen = df[df['Typ'] == 'Einnahme']['Betrag'].sum()
-            ausgaben = df[df['Typ'] == 'Ausgabe']['Betrag'].sum()
+            # 3. Berechnungen mit explizitem float-Typ
+            einnahmen = float(df[df['Typ'] == 'Einnahme']['Betrag'].sum())
+            ausgaben = float(df[df['Typ'] == 'Ausgabe']['Betrag'].sum())
+            saldo = einnahmen - ausgaben
             
-            # 4. Anzeige der Metriken
+            # 4. Sichere Anzeige (metric verlangt einfache Zahlen/Strings)
             col1, col2, col3 = st.columns(3)
-            col1.metric("Einnahmen", f"{einnahmen:.2f} €")
-            col2.metric("Ausgaben", f"{ausgaben:.2f} €")
-            col3.metric("Saldo", f"{einnahmen - ausgaben:.2f} €")
+            col1.metric("Einnahmen", f"{einnahmen:,.2f} €")
+            col2.metric("Ausgaben", f"{ausgaben:,.2f} €")
+            col3.metric("Saldo", f"{saldo:,.2f} €")
         else:
-            st.info("Noch keine Daten in der Datenbank gefunden.")ele.py einfügen
-        st.info("Sparziel-Ansicht in Arbeit.")
+            st.info("Noch keine Transaktionsdaten gefunden.")
