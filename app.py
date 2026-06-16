@@ -32,48 +32,27 @@ if check_password():
     # Daten laden
     df = pd.DataFrame(datenbank.lade_eintraege()) # Lade alle Daten
     
-   if choice == "Dashboard":
+  if choice == "Dashboard":
         st.subheader("Übersicht")
         df = get_data("Transaktion")
         
         if not df.empty:
-            # 1. Spaltennamen säubern (falls Leerzeichen drin sind)
+            # 1. Leerzeichen aus Spaltennamen entfernen
             df.columns = df.columns.str.strip()
             
-            # 2. Betrag erzwingen als Zahl (Numeric)
-            # 'coerce' wandelt Fehler (wie Text) in NaN um, danach füllen wir mit 0
+            # 2. Betrag erzwingen als Zahl (Numeric). 
+            # Fehler (wie Text) werden zu 0 umgewandelt.
             df['Betrag'] = pd.to_numeric(df['Betrag'], errors='coerce').fillna(0)
             
             # 3. Berechnungen
             einnahmen = df[df['Typ'] == 'Einnahme']['Betrag'].sum()
             ausgaben = df[df['Typ'] == 'Ausgabe']['Betrag'].sum()
             
+            # 4. Anzeige der Metriken
             col1, col2, col3 = st.columns(3)
             col1.metric("Einnahmen", f"{einnahmen:.2f} €")
             col2.metric("Ausgaben", f"{ausgaben:.2f} €")
             col3.metric("Saldo", f"{einnahmen - ausgaben:.2f} €")
         else:
-            st.info("Noch keine Daten vorhanden.")
-        
-    elif choice == "Transaktionen":
-        st.subheader("Transaktionen verwalten")
-        with st.form("trans_form"):
-            kat = st.text_input("Kategorie")
-            betrag = st.number_input("Betrag", min_value=0.0)
-            typ = st.selectbox("Typ", ["Ausgabe", "Einnahme"])
-            datum = st.date_input("Datum")
-            if st.form_submit_button("Speichern"):
-                datenbank.speichere_eintrag("Transaktion", typ, kat, betrag, str(datum))
-                st.success("Gespeichert!")
-                st.rerun()
-        st.dataframe(df[df['Bereich'] == 'Transaktion'])
-
-    elif choice == "Budgets":
-        st.subheader("Budgets")
-        # Hier die Budget-Logik aus budgets.py einfügen
-        st.info("Budget-Ansicht in Arbeit.")
-
-    elif choice == "Sparziele":
-        st.subheader("Sparziele")
-        # Hier die Sparziel-Logik aus sparziele.py einfügen
+            st.info("Noch keine Daten in der Datenbank gefunden.")ele.py einfügen
         st.info("Sparziel-Ansicht in Arbeit.")
