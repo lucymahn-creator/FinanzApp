@@ -6,6 +6,12 @@ from datetime import datetime
 # Konfiguration
 st.set_page_config(page_title="Finanz-Tracker Pro", layout="wide")
 
+# --- KATEGORIEN DEFINIEREN ---
+STANDARD_KATEGORIEN = [
+    "Gehalt", "Miete", "Lebensmittel", "Freizeit", 
+    "Auto/Transport", "Getränke", "Einkauf L", "Sonstiges"
+]
+
 # Passwort-Logik
 def check_password():
     def password_entered():
@@ -72,15 +78,22 @@ if check_password():
                 selected_label = st.selectbox("Wähle einen Eintrag aus:", list(options.keys()))
                 auswahl = options[selected_label]
                 
-                # Datumstext in ein echtes Datum umwandeln (für das Eingabefeld)
+                # Datumstext in ein echtes Datum umwandeln
                 try:
                     default_date = datetime.strptime(auswahl['Datum'], "%Y-%m-%d").date()
                 except ValueError:
                     default_date = datetime.today().date()
                 
+                # Sicherheitslogik: Falls die gespeicherte Kategorie alt/unbekannt ist, füge sie der Liste hinzu
+                aktuelle_kategorie = str(auswahl['Kategorie'])
+                kategorie_liste = STANDARD_KATEGORIEN.copy()
+                if aktuelle_kategorie not in kategorie_liste:
+                    kategorie_liste.append(aktuelle_kategorie)
+                kat_index = kategorie_liste.index(aktuelle_kategorie)
+                
                 # Bearbeitungs-Formular
                 with st.form("edit_form"):
-                    kat_ed = st.text_input("Kategorie", value=str(auswahl['Kategorie']))
+                    kat_ed = st.selectbox("Kategorie", kategorie_liste, index=kat_index)
                     betrag_ed = st.number_input("Betrag", value=float(auswahl['Betrag']), min_value=0.0)
                     typ_ed = st.selectbox("Typ", ["Ausgabe", "Einnahme"], index=0 if auswahl['Typ'] == "Ausgabe" else 1)
                     datum_ed = st.date_input("Datum", value=default_date)
@@ -105,7 +118,7 @@ if check_password():
         with tab2:
             st.subheader("Neue Transaktion anlegen")
             with st.form("trans_form"):
-                kat = st.text_input("Kategorie")
+                kat = st.selectbox("Kategorie", STANDARD_KATEGORIEN)
                 betrag = st.number_input("Betrag", min_value=0.0, format="%.2f")
                 typ = st.selectbox("Typ", ["Ausgabe", "Einnahme"])
                 datum = st.date_input("Datum", value=datetime.today().date())
@@ -121,31 +134,5 @@ if check_password():
         st.subheader("Budgets verwalten")
         st.info("Hier kannst du zukünftig Limits für deine Kategorien festlegen.")
         with st.form("budget_form"):
-            kat = st.text_input("Kategorie (z.B. Lebensmittel)")
-            limit = st.number_input("Monatliches Limit (€)", min_value=0.0)
-            if st.form_submit_button("Budget speichern"):
-                datenbank.speichere_eintrag(USER, PASS, "Budget", "Limit", kat, limit, str(datetime.today().date()), "Monatsbudget")
-                st.success("Budget gespeichert!")
-                st.rerun()
-
-        # Budgets anzeigen
-        budget_data = datenbank.lade_eintraege(USER, PASS, "Budget")
-        if budget_data:
-            st.dataframe(pd.DataFrame(budget_data)[["Kategorie", "Betrag", "Datum"]])
-
-    # --- SPARZIELE ---
-    elif choice == "Sparziele":
-        st.subheader("Sparziele")
-        st.info("Hier kannst du deine Sparziele definieren.")
-        with st.form("ziel_form"):
-            ziel_name = st.text_input("Name des Ziels (z.B. Urlaub)")
-            ziel_betrag = st.number_input("Zielbetrag (€)", min_value=0.0)
-            if st.form_submit_button("Sparziel anlegen"):
-                datenbank.speichere_eintrag(USER, PASS, "Sparziel", "Ziel", ziel_name, ziel_betrag, str(datetime.today().date()), "Neues Ziel")
-                st.success("Sparziel gespeichert!")
-                st.rerun()
-                
-        # Ziele anzeigen
-        ziel_data = datenbank.lade_eintraege(USER, PASS, "Sparziel")
-        if ziel_data:
-            st.dataframe(pd.DataFrame(ziel_data)[["Kategorie", "Betrag", "Datum"]])
+            kat = st.selectbox("Kategorie", STANDARD_KATEGORIEN)
+            limit = st
