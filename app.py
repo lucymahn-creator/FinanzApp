@@ -39,25 +39,60 @@ if check_password():
     USER = st.secrets["NEXTCLOUD_USER"]
     PASS = st.secrets["NEXTCLOUD_PASS"]
     
-    # --- DASHBOARD ---
+  # --- DASHBOARD ---
     if choice == "Dashboard":
         st.subheader("Übersicht")
         data = datenbank.lade_eintraege(USER, PASS, "Transaktion")
         df = pd.DataFrame(data)
         
         if not df.empty:
+            # Beträge in Zahlen umwandeln
             df['Betrag'] = pd.to_numeric(df['Betrag'], errors='coerce').fillna(0)
-            ein_df = df[df['Typ'] == 'Einnahme']['Betrag']
-            aus_df = df[df['Typ'] == 'Ausgabe']['Betrag']
             
+            # Einnahmen und Ausgaben trennen
+            ein_df = df[df['Typ'] == 'Einnahme']['Betrag']
+            nur_ausgaben = df[df['Typ'] == 'Ausgabe']
+            aus_df = nur_ausgaben['Betrag']
+            
+            # Summen berechnen
             einnahmen = float(ein_df.sum()) if not ein_df.empty else 0.0
             ausgaben = float(aus_df.sum()) if not aus_df.empty else 0.0
             saldo = einnahmen - ausgaben
             
+            # Die 3 Haupt-Zahlen
             col1, col2, col3 = st.columns(3)
             col1.metric("Einnahmen", f"{einnahmen:,.2f} €")
             col2.metric("Ausgaben", f"{ausgaben:,.2f} €")
             col3.metric("Saldo", f"{saldo:,.2f} €", delta=f"{saldo:,.2f} €", delta_color="normal" if saldo >= 0 else "inverse")
+            
+            st.divider()
+            
+            # --- NEU: Ausgaben nach Kategorie ---
+            st.subheader("📊 Ausgaben nach Kategorie")
+            
+            if not nur_ausgaben.empty:
+                # Gruppieren und summieren
+                ausgaben_kat = nur_ausgaben.groupby('Kategorie')['Betrag'].sum().reset_index()
+                # Nach dem höchsten Betrag sortieren
+                ausgaben_kat = ausgaben_kat.sort_values(by='Betrag', ascending=False)
+                
+                # Links eine kleine Tabelle, rechts ein Balkendiagramm
+                col_tab, col_chart = st.columns([1, 2])
+                
+                with col_tab:
+                    # Damit die Tabelle schöner aussieht (mit € Zeichen)
+                    st.dataframe(
+                        ausgaben_kat.style.format({'Betrag': '{:.2f} €'}),
+                        use_container_width=True,
+                        hide_index=True
+                    )
+                    
+                with col_chart:
+                    # Ein automatisches Streamlit-Balkendiagramm
+                    st.bar_chart(ausgaben_kat, x='Kategorie', y='Betrag', color="#ff4b4b")
+            else:
+                st.info("Noch keine Ausgaben erfasst, um sie nach Kategorien aufzuteilen.")
+                
         else:
             st.info("Noch keine Transaktionen vorhanden.")
             
