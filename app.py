@@ -129,10 +129,25 @@ if check_password():
                     st.success("Transaktion gespeichert!")
                     st.rerun()
 
-    # --- BUDGETS ---
+  # --- BUDGETS ---
     elif choice == "Budgets":
         st.subheader("Budgets verwalten")
-        st.info("Hier kannst du zukünftig Limits für deine Kategorien festlegen.")
+        st.info("Hier kannst du Limits für deine Kategorien festlegen.")
+        
         with st.form("budget_form"):
             kat = st.selectbox("Kategorie", STANDARD_KATEGORIEN)
-            limit = st
+            limit = st.number_input("Monatliches Limit (€)", min_value=0.0)
+            
+            # WICHTIG: Dieser Button MUSS eingerückt sein, 
+            # damit Streamlit weiß, dass er zum Formular gehört!
+            submit_budget = st.form_submit_button("💾 Budget speichern")
+            
+            if submit_budget:
+                datenbank.speichere_eintrag(USER, PASS, "Budget", "Limit", kat, limit, str(datetime.today().date()), "Monatsbudget")
+                st.success("Budget gespeichert!")
+                st.rerun()
+
+        # Budgets anzeigen (Das steht wieder außerhalb des Formulars)
+        budget_data = datenbank.lade_eintraege(USER, PASS, "Budget")
+        if budget_data:
+            st.dataframe(pd.DataFrame(budget_data)[["Kategorie", "Betrag", "Datum"]])
